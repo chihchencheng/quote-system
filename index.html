@@ -2,70 +2,275 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>內部估價單系統</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>家屋報價系統</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h1 { color: #2c3e50; }
-    label, select, input { margin: 5px 0; display: block; }
-    button { margin-top: 10px; padding: 8px 12px; background: #3498db; color: white; border: none; cursor: pointer; }
-    button:hover { background: #2980b9; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Microsoft JhengHei', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #2c3e50, #3498db);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+    
+    .header p {
+      opacity: 0.9;
+      font-size: 1.1em;
+    }
+    
+    .content {
+      padding: 40px;
+    }
+    
+    .form-section {
+      background: #f8f9fa;
+      padding: 30px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    
+    select, input, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    
+    select:focus, input:focus, textarea:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+    
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    
+    .btn-primary {
+      background: #3498db;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+    }
+    
+    .btn-success {
+      background: #27ae60;
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background: #229954;
+      transform: translateY(-2px);
+    }
+    
+    .btn-danger {
+      background: #e74c3c;
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+    
+    .cart-section {
+      margin-top: 30px;
+    }
+    
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      background: white;
+      border: 1px solid #eee;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+    
+    .cart-total {
+      text-align: right;
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-top: 20px;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #7f8c8d;
+    }
+    
+    .error {
+      background: #ffe6e6;
+      color: #c0392b;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+    
+    .success {
+      background: #e8f5e8;
+      color: #27ae60;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+    
+    @media print {
+      body { background: white; }
+      .no-print { display: none; }
+    }
+    
+    @media (max-width: 768px) {
+      .container { margin: 10px; }
+      .content { padding: 20px; }
+      .header { padding: 20px; }
+      .header h1 { font-size: 2em; }
+    }
   </style>
 </head>
 <body>
-  <h1>報價單產生器</h1>
+  <div class="container">
+    <div class="header">
+      <h1>電器行內部報價系統</h1>
+      <p>快速、準確、專業的報價工具</p>
+    </div>
+    
+    <!-- 登入區塊 -->
+    <div id="loginSection" class="form-section">
+      <h2>系統登入</h2>
+      <div class="form-group">
+        <label for="userEmail">電子郵件</label>
+        <input type="email" id="userEmail" placeholder="請輸入您的電子郵件" required>
+      </div>
+      <div class="form-group">
+        <label for="userApiKey">API 金鑰</label>
+        <input type="password" id="userApiKey" placeholder="請輸入系統提供的 API 金鑰" required>
+      </div>
+      <button class="btn btn-primary" onclick="handleLogin()">登入系統</button>
+      <div id="loginMessage" style="margin-top: 15px;"></div>
+    </div>
+    
+    <!-- 主要功能區塊（預設隱藏） -->
+    <div id="mainApp" style="display: none;">
+      <div class="user-info" style="text-align: right; margin-bottom: 20px;">
+        <span id="currentUser"></span>
+        <button class="btn btn-danger" onclick="handleLogout()" style="margin-left: 10px;">登出</button>
+      </div>
+      
+      <div id="message"></div>
+      
+      <div class="form-section">
+        <h2>客戶資訊</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div class="form-group">
+            <label for="customerName">客戶姓名</label>
+            <input type="text" id="customerName" placeholder="請輸入客戶姓名">
+          </div>
+          <div class="form-group">
+            <label for="customerPhone">聯絡電話</label>
+            <input type="tel" id="customerPhone" placeholder="請輸入聯絡電話">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="customerAddress">地址</label>
+          <input type="text" id="customerAddress" placeholder="請輸入安裝地址">
+        </div>
+      </div>
+      
+      <div class="form-section">
+        <h2>新增產品</h2>
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 10px; align-items: end;">
+          <div class="form-group">
+            <label for="product">選擇產品</label>
+            <select id="product">
+              <option value="">載入中...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="quantity">數量</label>
+            <input type="number" id="quantity" min="1" value="1">
+          </div>
+          <div class="form-group">
+            <label for="discount">折扣 (%)</label>
+            <input type="number" id="discount" min="0" max="100" value="0">
+          </div>
+          <div class="form-group">
+            <label for="unitPrice">單價</label>
+            <input type="number" id="unitPrice" readonly>
+          </div>
+          <button class="btn btn-primary" onclick="addToCart()">加入</button>
+        </div>
+      </div>
+      
+      <div class="cart-section">
+        <h2>報價清單</h2>
+        <div id="cartItems">
+          <div class="loading">尚無產品，請先新增產品</div>
+        </div>
+        <div class="cart-total">
+          總金額: $<span id="totalAmount">0</span>
+        </div>
+      </div>
+      
+      <div style="text-align: center; margin-top: 30px;">
+        <button class="btn btn-success no-print" onclick="generatePDF()">產生PDF報價單</button>
+        <button class="btn btn-primary no-print" onclick="printQuote()">列印報價單</button>
+        <button class="btn btn-danger no-print" onclick="clearCart()">清空清單</button>
+      </div>
+    </div>
+  </div>
 
-  <label for="product">選擇產品：</label>
-  <select id="product"></select>
-
-  <label for="qty">輸入數量：</label>
-  <input type="number" id="qty" min="1" value="1">
-
-  <button onclick="generateQuote()">產生估價單 PDF</button>
-
-  <script>
-    // === 換成你自己的 Google Apps Script API 網址 ===
-    const API_URL = "https://script.google.com/macros/s/AKfycbwSTu4M5gsHB_vP1pdAHsmXbkQtMF6lhTLT17Y1zepfXEtoUgkOQHK7Vto7gNcfWaGDXw/exec";
-
-    let productList = [];
-
-    // 初始化：讀取產品清單
-    fetch(API_URL)
-      .then(res => res.json())
-      .then(data => {
-        productList = data;
-        const select = document.getElementById('product');
-        data.forEach(item => {
-          let opt = document.createElement('option');
-          opt.value = item["單價"];
-          opt.text = `${item["產品名稱"]} - $${item["單價"]}`;
-          select.add(opt);
-        });
-      })
-      .catch(err => alert("讀取產品資料失敗，請確認 API_URL 是否正確"));
-
-    // 產生 PDF 報價單
-    function generateQuote() {
-      const { jsPDF } = window.jspdf;
-
-      const select = document.getElementById('product');
-      const qty = parseInt(document.getElementById('qty').value);
-      const productName = select.options[select.selectedIndex].text;
-      const unitPrice = parseFloat(select.value);
-      const total = unitPrice * qty;
-
-      const doc = new jsPDF();
-      doc.setFontSize(16);
-      doc.text("估價單", 90, 20);
-
-      doc.setFontSize(12);
-      doc.text(`產品：${productName}`, 20, 40);
-      doc.text(`數量：${qty}`, 20, 50);
-      doc.text(`單價：$${unitPrice}`, 20, 60);
-      doc.text(`總價：$${total}`, 20, 70);
-
-      doc.save("估價單.pdf");
-    }
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
