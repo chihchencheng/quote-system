@@ -3,9 +3,9 @@
 
 // 從環境變數或配置文件讀取設定
 const CONFIG = {
-  API_URL: "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec",
-  API_KEY: "your-api-key-here",
-  DEFAULT_EMAIL: ""
+  API_URL: process.env.API_URL,
+  API_KEY: process.env.API_KEY,
+  DEFAULT_EMAIL: "chihchencheng31@gmail.com"
 };
 
 // 全域變數
@@ -52,10 +52,10 @@ function showMainApp() {
 // 處理登入
 async function handleLogin() {
     const email = document.getElementById('userEmail').value.trim();
-    const apiKey = document.getElementById('userApiKey').value.trim();
+    // const apiKey = document.getElementById('userApiKey').value.trim();
     
     if (!email || !apiKey) {
-        showLoginMessage('請輸入電子郵件和 API 金鑰', 'error');
+        showLoginMessage('請輸入電子郵件', 'error');
         return;
     }
     
@@ -63,7 +63,7 @@ async function handleLogin() {
         showLoginMessage('驗證中...', 'loading');
         
         // 測試驗證
-        const testUrl = `${CONFIG.API_URL}?email=${encodeURIComponent(email)}&apiKey=${encodeURIComponent(apiKey)}`;
+        const testUrl = `${CONFIG.API_URL}?email=${encodeURIComponent(email)}`;
         const response = await fetch(testUrl);
         const result = await response.json();
         

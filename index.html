@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>家屋報價系統</title>
+  <title>報價系統</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     * {
@@ -182,8 +182,7 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>電器行內部報價系統</h1>
-      <p>快速、準確、專業的報價工具</p>
+      <h1>報價系統</h1>
     </div>
     
     <!-- 登入區塊 -->
@@ -193,10 +192,10 @@
         <label for="userEmail">電子郵件</label>
         <input type="email" id="userEmail" placeholder="請輸入您的電子郵件" required>
       </div>
-      <div class="form-group">
+      <!-- <div class="form-group">
         <label for="userApiKey">API 金鑰</label>
         <input type="password" id="userApiKey" placeholder="請輸入系統提供的 API 金鑰" required>
-      </div>
+      </div> -->
       <button class="btn btn-primary" onclick="handleLogin()">登入系統</button>
       <div id="loginMessage" style="margin-top: 15px;"></div>
     </div>
