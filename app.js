@@ -2,9 +2,14 @@
 // 與 Google Apps Script API 整合
 
 // 從環境變數或配置文件讀取設定
+// 在 GitHub Pages 環境中，使用 window 物件來存取環境變數
 const CONFIG = {
-  API_URL: process.env.API_URL,
-  API_KEY: process.env.API_KEY,
+  API_URL: (typeof process !== 'undefined' && process.env && process.env.API_URL) || 
+           (typeof window !== 'undefined' && window.ENV && window.ENV.API_URL) ||
+           'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec',
+  API_KEY: (typeof process !== 'undefined' && process.env && process.env.API_KEY) || 
+           (typeof window !== 'undefined' && window.ENV && window.ENV.API_KEY) ||
+           '',
   DEFAULT_EMAIL: "chihchencheng31@gmail.com"
 };
 
@@ -52,7 +57,7 @@ function showMainApp() {
 // 處理登入
 async function handleLogin() {
     const email = document.getElementById('userEmail').value.trim();
-    // const apiKey = document.getElementById('userApiKey').value.trim();
+    const apiKey = document.getElementById('userApiKey').value.trim();
     
     if (!email || !apiKey) {
         showLoginMessage('請輸入電子郵件', 'error');
