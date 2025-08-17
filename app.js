@@ -138,64 +138,21 @@ function setupEventListeners() {
     });
 }
 
-// 載入產品資料
+// 載入產品資料（新版 - 使用本地產品規格）
 async function loadProducts() {
     if (!isAuthenticated) {
         showMessage('請先登入系統', 'error');
         return;
     }
     
-    try {
-        showMessage('載入產品資料中...', 'loading');
-        
-        const savedAuth = JSON.parse(localStorage.getItem('quoteSystemAuth'));
-        const url = `${CONFIG.API_URL}?email=${encodeURIComponent(savedAuth.email)}&apiKey=${encodeURIComponent(savedAuth.apiKey)}`;
-        
-        const response = await fetch(url);
-        const result = await response.json();
-        
-        if (result.status === 'success') {
-            products = result.data;
-            populateProductSelect();
-            showMessage('產品資料載入完成', 'success');
-        } else if (result.code === 'UNAUTHORIZED') {
-            handleLogout();
-            showLoginMessage('登入已過期，請重新登入', 'error');
-        } else {
-            throw new Error(result.message);
-        }
-    } catch (error) {
-        console.error('載入產品失敗:', error);
-        showMessage('載入產品資料失敗，請確認網路連線', 'error');
-    }
+    showMessage('產品系統就緒', 'success');
+    // 產品資料已經在 productSpecs 中定義，不需要從API載入
 }
 
-// 填充產品選擇器
-function populateProductSelect() {
-    const select = document.getElementById('product');
-    select.innerHTML = '<option value="">請選擇產品</option>';
-    
-    products.forEach(product => {
-        const option = document.createElement('option');
-        option.value = product['產品名稱'];
-        option.textContent = `${product['產品名稱']} - $${product['單價']}`;
-        option.dataset.price = product['單價'];
-        select.appendChild(option);
-    });
-}
-
-// 更新單價顯示
+// 更新單價顯示（新版）
 function updateUnitPrice() {
-    const productSelect = document.getElementById('product');
-    const unitPriceInput = document.getElementById('unitPrice');
-    
-    if (productSelect.value) {
-        const selectedOption = productSelect.selectedOptions[0];
-        const price = parseFloat(selectedOption.dataset.price) || 0;
-        unitPriceInput.value = price;
-    } else {
-        unitPriceInput.value = '';
-    }
+    // 此函數已被 updateProductOptions 取代
+    // 保留以相容於舊的事件監聽器
 }
 
 // 新增產品到購物車
@@ -539,6 +496,142 @@ async function saveQuoteRecord(customerName, customerPhone, customerAddress, quo
     } catch (error) {
         console.error('儲存報價記錄失敗:', error);
     }
+}
+
+// 產品規格資料
+const productSpecs = {
+    '冷氣': {
+        sizes: ['1噸', '1.5噸', '2噸', '2.5噸', '3噸'],
+        areaCoverage: ['3-5坪', '5-8坪', '8-12坪', '12-15坪', '15-20坪'],
+        basePrices: [15000, 20000, 28000, 35000, 45000]
+    },
+    '洗衣機': {
+        sizes: ['6公斤', '8公斤', '10公斤', '12公斤', '15公斤'],
+        areaCoverage: ['1-2人', '2-3人', '3-4人', '4-5人', '5人以上'],
+        basePrices: [8000, 12000, 18000, 25000, 35000]
+    },
+    '電視': {
+        sizes: ['32吋', '43吋', '50吋', '55吋', '65吋', '75吋'],
+        areaCoverage: ['小房間', '臥室', '客廳小', '客廳中', '客廳大', '視聽室'],
+        basePrices: [8000, 15000, 25000, 35000, 50000, 80000]
+    },
+    '冰箱': {
+        sizes: ['100公升', '200公升', '300公升', '400公升', '500公升以上'],
+        areaCoverage: ['1-2人', '2-3人', '3-4人', '4-5人', '5人以上'],
+        basePrices: [10000, 18000, 28000, 40000, 60000]
+    }
+};
+
+// 更新產品選項
+function updateProductOptions() {
+    const productType = document.getElementById('productType').value;
+    const sizeSelect = document.getElementById('productSize');
+    const areaSelect = document.getElementById('areaCoverage');
+    
+    // 清除現有選項
+    sizeSelect.innerHTML = '<option value="">請選擇規格</option>';
+    areaSelect.innerHTML = '<option value="">請選擇坪數</option>';
+    
+    if (!productType || !productSpecs[productType]) {
+        document.getElementById('unitPrice').value = '';
+        document.getElementById('productDescription').value = '';
+        return;
+    }
+    
+    const specs = productSpecs[productType];
+    
+    // 填充大小選項
+    specs.sizes.forEach((size, index) => {
+        const option = document.createElement('option');
+        option.value = size;
+        option.textContent = size;
+        option.dataset.price = specs.basePrices[index];
+        option.dataset.area = specs.areaCoverage[index];
+        sizeSelect.appendChild(option);
+    });
+    
+    // 當選擇大小時更新坪數和價格
+    sizeSelect.onchange = function() {
+        const selectedIndex = this.selectedIndex - 1; // 減去"請選擇規格"
+        if (selectedIndex >= 0) {
+            areaSelect.innerHTML = '<option value="">' + specs.areaCoverage[selectedIndex] + '</option>';
+            document.getElementById('unitPrice').value = specs.basePrices[selectedIndex];
+            updateProductDescription();
+        }
+    };
+    
+    // 重置價格和描述
+    document.getElementById('unitPrice').value = '';
+    document.getElementById('productDescription').value = '';
+}
+
+// 更新產品描述
+function updateProductDescription() {
+    const productType = document.getElementById('productType').value;
+    const productSize = document.getElementById('productSize').value;
+    const areaCoverage = document.getElementById('areaCoverage').value;
+    
+    if (productType && productSize) {
+        document.getElementById('productDescription').value = 
+            `${productType} - ${productSize} - 適用${areaCoverage || '一般家庭'}`;
+    } else {
+        document.getElementById('productDescription').value = '';
+    }
+}
+
+// 新增產品到購物車（更新版）
+function addToCart() {
+    const productType = document.getElementById('productType').value;
+    const productSize = document.getElementById('productSize').value;
+    const areaCoverage = document.getElementById('areaCoverage').value;
+    const quantityInput = document.getElementById('quantity');
+    
+    if (!productType) {
+        showMessage('請選擇產品類型', 'error');
+        return;
+    }
+    
+    if (!productSize) {
+        showMessage('請選擇產品規格', 'error');
+        return;
+    }
+    
+    const quantity = parseInt(quantityInput.value) || 0;
+    if (quantity <= 0) {
+        showMessage('請輸入有效的數量', 'error');
+        return;
+    }
+    
+    const unitPrice = parseFloat(document.getElementById('unitPrice').value);
+    const productName = `${productType} ${productSize}`;
+    
+    // 檢查是否已存在相同產品
+    const existingItem = cart.find(item => item.name === productName);
+    if (existingItem) {
+        existingItem.quantity += quantity;
+    } else {
+        cart.push({
+            name: productName,
+            quantity: quantity,
+            unitPrice: unitPrice,
+            discount: 0,
+            type: productType,
+            size: productSize,
+            area: areaCoverage
+        });
+    }
+    
+    renderCart();
+    saveCartToStorage();
+    showMessage('產品已加入清單', 'success');
+    
+    // 清空選擇
+    document.getElementById('productType').value = '';
+    document.getElementById('productSize').innerHTML = '<option value="">請選擇規格</option>';
+    document.getElementById('areaCoverage').innerHTML = '<option value="">請選擇坪數</option>';
+    document.getElementById('quantity').value = '1';
+    document.getElementById('unitPrice').value = '';
+    document.getElementById('productDescription').value = '';
 }
 
 // 產生報價單 ID
